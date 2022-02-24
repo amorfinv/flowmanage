@@ -2,9 +2,12 @@ import os
 import json
 import sys
 from multiprocessing import Pool as ThreadPool
+from rich.progress import track
+from rich.progress import Progress
 
 import osmnx as ox
 import numpy as np
+import pandas as pd
 
 import flowmanage as fm
 
@@ -19,7 +22,9 @@ class ScenarioMaker:
             fm.con.print('[red bold]No intention files found!')
             fm.con.print("[red bold]Try:[/] [green]python FlowManage.py --intention")
             quit()
-        
+        # remove any hidden files
+        self.intention_files = [file for file in self.intention_files if not file.startswith('.')]
+
         # read osmx graph from data
         self.G = ox.load_graphml(fm.settings.graph_path)
 
@@ -27,90 +32,80 @@ class ScenarioMaker:
         self.nodes, self.edges =  ox.graph_to_gdfs(self.G)
 
     def process(self):
-        ...
 
-    def create_scen(self, intention_file_name):
-        flight_intention_list  = []
-        with open(self.intention_folder + intention_file_name) as file:
-            for line in file:
-                line = line.strip()
-                line = line.split(',')
-                flight_intention_list.append(line)
-        
+        # Loop through intention files
+        for intention_file in track(self.intention_files, description="[magenta]Processing...", 
+                        console=fm.con):
+            
+            # read the intention file
+            flight_intention  = []
+            file_path = os.path.join(self.intention_folder, intention_file)
 
-    def Intention2Scn()-> None:
-        ...
-        # # Step 2: Generate traffic from the flight intention file
-        # generated_traffic, loitering_edges_dict = bst.Intention2Traf(flight_intention_list, edges.copy())
-        # #print('Traffic generated!')
+            flight_intention_df = pd.read_csv(file_path, names=fm.settings.intention_cols)
+
+            with open(file_path) as file:
+                for line in file:
+                    line = line.strip()
+                    line = line.split(',')
+                    flight_intention.append(line)
         
-        # # create a loitering edges dill
-        # scenario_loitering_dill_folder = 'scenario_loitering_dills/'
-        # scenario_loitering_dill_name = intention_file_name.replace('.csv','.dill')
-        # output_file=open(scenario_loitering_dill_folder + scenario_loitering_dill_name, 'wb')
-        # dill.dump(loitering_edges_dict,output_file)
-        # output_file.close()
-        # #print('Created loitering dill')
-        
-        # # Step 3: Loop through traffic
-        # lines = []
-        # for cnt, flight in enumerate(generated_traffic):
-        
-        #     # if cnt>10:#0 :
-        #     #     break #stop at 20 aircrafts or change that
-        
-        #     # Step 4: Add to dictionary
+            # save to scenario
+            self.Intention2Traf(flight_intention, intention_file)
+ 
+    def Intention2Traf(self, flight_intention_list, intention_name) -> None:
+        """Processes a flight intention list and saves it to a scenario file
+
+        Args:
+            flight_intention_list (list): [description]
+        """
+
+        ac_no = 1
+        lines = []
+        for flight_intention in flight_intention_list:
             
-        #     # Get the flight intention information
-        #     drone_id = flight[0]
-        #     aircraft_type = flight[1]
-        #     start_time = flight[2]
-        #     origin_lat = flight[3][1]
-        #     origin_lon = flight[3][0]
-        #     dest_lat = flight[4][1]
-        #     dest_lon = flight[4][0]
-        #     file_loc = flight[5]
-        #     priority = flight[7]
-        #     geoduration = flight[8]
-        #     geocoords = flight[9] 
-        
-        #     # constants for scenario
-        #     start_speed = 0.0
-        #     qdr = 0.0
-        #     alt = 0.0
-        
-        #     # Convert start_time to Bluesky format
-        #     start_time = round(start_time)
-        #     m, s = divmod(start_time, 60)
-        #     h, m = divmod(m, 60)
-        #     start_time_txt = f'{h:02d}:{m:02d}:{s:02d}>'
-        
-        #     # QUEUE COMMAND
-        #     if geocoords:
-        #         queue_text = f'QUEUEM2 {drone_id},{aircraft_type},{file_loc},{origin_lat},{origin_lon},{dest_lat},{dest_lon},{qdr},{alt},{start_speed},{priority},{geoduration},{geocoords}\n'
-        #     else:
-        #         queue_text = f'QUEUEM2 {drone_id},{aircraft_type},{file_loc},{origin_lat},{origin_lon},{dest_lat},{dest_lon},{qdr},{alt},{start_speed},{priority},{geoduration},\n'
+            # get acid and actype
+            acid = flight_intention[0]
+            actype = flight_intention[1]
+
+            # get the starting time in seconds
+            spawn_time = flight_intention[2]
+
+            # get last two entries of aicraft type for start_speed
+            start_speed = int(actype[-2:])
+
+            # start altitude and qdr
+            alt = 30
+            qdr = 0
+
+            # get the origin and destination
+            round_int = 8
+            origin_lon = round(float(flight_intention[3]),round_int)
+            origin_lat = round(float(flight_intention[4]),round_int)
+
+            # get the destination location
+            dest_lon = round(float(flight_intention[5]),round_int)
+            dest_lat = round(float(flight_intention[6]),round_int)
+
+            # get the priority
+            priority = int(flight_intention[7])
             
-        #     lines.append(start_time_txt + queue_text)
+            cretext = f'CREM2 {acid},{actype},{origin_lat},{origin_lon},{dest_lat},{dest_lon},{qdr},{alt},{start_speed},{priority}\n'
             
+            lines.append(spawn_time + '>' + cretext)
+
+        # write stuff to file
+        scenario_folder = fm.settings.scenarios
+        scenario_file_name = intention_name.replace('csv','scn')
+
+        scenario_path = os.path.join(scenario_folder, scenario_file_name)
         
-        # # write stuff to file
-        # scenario_folder = 'scenarios/'
-        # scenario_file_name = intention_file_name.replace('csv','scn')
-        
-        # # Step 4: Create scenario file from dictionary
-        # with open(scenario_folder+scenario_file_name, 'w+') as f:
-        #     # f.write('00:00:00>HOLD\n00:00:00>PAN 48.204011819028494 16.363471515762452\n00:00:00>ZOOM 10\n')
-        #     f.write('00:00:00.00>FF\n')
-        #     f.write('00:00:00>STARTM2LOG\n')
-        #     f.write('00:00:00>ASAS ON\n00:00:00>RESO SPEEDBASEDV3\n00:00:00>CDMETHOD M2STATEBASED\n')
-        #     f.write('00:00:00>STREETSENABLE\n')
-        #     f.write(f'00:00:00>loadloiteringdill {scenario_loitering_dill_name}\n')
-        #     f.write('00:00:00>CASMACHTHR 0\n')
-        #     f.write('00:00:00>LOADGEOJSON open_geofence id height\n00:00:00>LOADGEOJSON bldg_geofence fid h\n')
-        #     f.write(''.join(lines))
+        # Step 4: Create scenario file from dictionary
+        with open(scenario_path, 'w+') as f:
             
-        # # print(intention_file_name)
+            # first write the header from settings
+            f.write(''.join(fm.settings.scenario_header))
+            f.write(''.join(lines))
+        
 
 def main():
     # create_scen(flight_intention_files[0])
