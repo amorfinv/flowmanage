@@ -26,6 +26,8 @@ class ScenarioMaker:
         # get nodes and edges
         self.nodes, self.edges =  ox.graph_to_gdfs(self.G)
 
+    def process(self):
+        ...
 
     def create_scen(self, intention_file_name):
         flight_intention_list  = []
