@@ -1,0 +1,5 @@
+*.DS_Store
+
+# stop tracking vienna data
+*.gpkg
+*.graphml
