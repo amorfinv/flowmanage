@@ -9,11 +9,11 @@ def main():
     if '--help' in sys.argv:
         fm.con.print("[blue underline]Usage:[/] [green]python FlowManage.py --options")
         fm.con.print("\n[magenta]FlowManage will run all modules in order if no options are specified.")
-        fm.con.print("[magenta]The order of modules is: (1)intention, (2)scenario, (3) airspace.")
+        fm.con.print("[magenta]The order of modules is: (1)intention, (2)airspace, (3)scenario.")
         fm.con.print("\n[red underline]Options:")
         fm.con.print("[red]--help               Display this information.")
-        fm.con.print("[red]--airspace           Create the airspace json files.")
         fm.con.print("[red]--intention          Create the intention csv files.")
+        fm.con.print("[red]--airspace           Create the airspace json files.")
         fm.con.print("[red]--scenario           Create the scenario scn files.")
         quit()  
     
@@ -31,19 +31,19 @@ def main():
     fm.init(mode)
 
     # run the selected modules
-    if mode == 'airspace':
-        fm.air
+    if mode == 'intention':
+        fm.inten.process()
 
-    elif mode == 'intention':
-        fm.inten
+    elif mode == 'airspace':
+        fm.air.process()
 
     elif mode == 'scenario':
-        fm.scen
+        fm.scen.process()
 
     else:
-        fm.air
-        fm.inten
-        fm.scen
+        fm.inten.process()
+        fm.air.process()
+        fm.scen.process()
     
 
 if __name__ == "__main__":
