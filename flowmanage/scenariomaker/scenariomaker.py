@@ -29,89 +29,53 @@ class ScenarioMaker:
         self.G = ox.load_graphml(fm.settings.graph_path)
 
         # get nodes and edges
-        self.nodes, self.edges =  ox.graph_to_gdfs(self.G)
+        self.nodes, self.edges = ox.graph_to_gdfs(self.G)
 
-    def process(self):
+    def process(self, multi: int | None = None) -> None:
 
-        # Loop through intention files
-        for intention_file in track(self.intention_files, description="[magenta]Processing...", 
-                        console=fm.con):
-            
-            # read the intention file
-            flight_intention  = []
-            file_path = os.path.join(self.intention_folder, intention_file)
+        if multi:
+                pool = ThreadPool(6)
+                pool.map(self.create_scen, self.intention_files)
+                pool.close()
+        else:
+            # Loop through intention files
+            for intention_file in track(self.intention_files, description="[magenta]Processing...", 
+                            console=fm.con):
 
-            flight_intention_df = pd.read_csv(file_path, names=fm.settings.intention_cols)
+                # create the scenario file
+                self.create_scen(intention_file)
 
-            with open(file_path) as file:
-                for line in file:
-                    line = line.strip()
-                    line = line.split(',')
-                    flight_intention.append(line)
+    def create_scen(self, intention_file: str) -> None:
+
+        # read the intention file
+        file_path = os.path.join(self.intention_folder, intention_file)
+
+        # create the dataframe
+        scen_df = pd.read_csv(file_path, names=fm.settings.intention_cols)
         
-            # save to scenario
-            self.Intention2Traf(flight_intention, intention_file)
- 
-    def Intention2Traf(self, flight_intention_list, intention_name) -> None:
-        """Processes a flight intention list and saves it to a scenario file
+        # see if any columns are missing from intention file
+        missing_cols = list(set(fm.settings.scen_cols) - set(fm.settings.intention_cols))
 
-        Args:
-            flight_intention_list (list): [description]
-        """
+        # add them to the dataframe
+        if missing_cols:
+            for col in missing_cols:
+                    scen_df[col] = fm.settings.default_values[col]
 
-        ac_no = 1
-        lines = []
-        for flight_intention in flight_intention_list:
-            
-            # get acid and actype
-            acid = flight_intention[0]
-            actype = flight_intention[1]
+        # create a column with spawn time + crecmd
+        scen_df['crecmd'] = scen_df['spawn_time'] + '>' + scen_df['crecmd']
 
-            # get the starting time in seconds
-            spawn_time = flight_intention[2]
+        # remove spawn time column
+        scen_df.drop('spawn_time', axis=1, inplace=True)
 
-            # get last two entries of aicraft type for start_speed
-            start_speed = int(actype[-2:])
-
-            # start altitude and qdr
-            alt = 30
-            qdr = 0
-
-            # get the origin and destination
-            round_int = 8
-            origin_lon = round(float(flight_intention[3]),round_int)
-            origin_lat = round(float(flight_intention[4]),round_int)
-
-            # get the destination location
-            dest_lon = round(float(flight_intention[5]),round_int)
-            dest_lat = round(float(flight_intention[6]),round_int)
-
-            # get the priority
-            priority = int(flight_intention[7])
-            
-            cretext = f'CREM2 {acid},{actype},{origin_lat},{origin_lon},{dest_lat},{dest_lon},{qdr},{alt},{start_speed},{priority}\n'
-            
-            lines.append(spawn_time + '>' + cretext)
-
-        # write stuff to file
+        # save as df to csv
         scenario_folder = fm.settings.scenarios
-        scenario_file_name = intention_name.replace('csv','scn')
+        scenario_file_name = intention_file.replace('csv','scn')
 
         scenario_path = os.path.join(scenario_folder, scenario_file_name)
-        
-        # Step 4: Create scenario file from dictionary
-        with open(scenario_path, 'w+') as f:
-            
-            # first write the header from settings
-            f.write(''.join(fm.settings.scenario_header))
-            f.write(''.join(lines))
-        
+        scen_df.to_csv(scenario_path, index=False, header=False, columns=fm.settings.scen_cols)
 
-def main():
-    # create_scen(flight_intention_files[0])
-    pool = ThreadPool(6)
-    results = pool.map(create_scen, flight_intention_files)
-    pool.close()
-
-if __name__ == '__main__':
-    main()
+        # add the header to the file
+        with open(scenario_path, 'r+') as f:
+            content = f.read()
+            f.seek(0, 0)
+            f.write(''.join(fm.settings.scenario_header) + content)

@@ -11,10 +11,11 @@ def main():
         fm.con.print("\n[magenta]FlowManage will run all modules in order if no options are specified.")
         fm.con.print("[magenta]The order of modules is: (1)intention, (2)airspace, (3)scenario.")
         fm.con.print("\n[red underline]Options:")
-        fm.con.print("[red]--help               Display this information.")
-        fm.con.print("[red]--intention          Create the intention csv files.")
-        fm.con.print("[red]--airspace           Create the airspace json files.")
-        fm.con.print("[red]--scenario           Create the scenario scn files.")
+        fm.con.print("[red]--help                Display this information.")
+        fm.con.print("[red]--intention           Create the intention csv files.")
+        fm.con.print("[red]--airspace            Create the airspace json files.")
+        fm.con.print("[red]--scenario            Create the scenario scn files.")
+        fm.con.print("[red]--multi num_workers   Multiprocessing option with workers.")
         quit()  
     
     if '--airspace' in sys.argv:
@@ -26,6 +27,12 @@ def main():
     else:
         mode = 'all'
 
+    if '--multi' in sys.argv:
+        try:
+            multi = int(sys.argv[sys.argv.index('--multi') + 1])
+        except IndexError:
+            multi = 6
+            fm.con.print("[magenta]No number of workers specified. Using default of 6.")
 
     # Initialize necessary modules
     fm.init(mode)
@@ -38,12 +45,12 @@ def main():
         fm.air.process()
 
     elif mode == 'scenario':
-        fm.scen.process()
+        fm.scen.process(multi)
 
     else:
         fm.inten.process()
         fm.air.process()
-        fm.scen.process()
+        fm.scen.process(multi)
     
 
 if __name__ == "__main__":
