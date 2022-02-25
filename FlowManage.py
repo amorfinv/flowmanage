@@ -31,9 +31,12 @@ def main():
         try:
             multi = int(sys.argv[sys.argv.index('--multi') + 1])
         except IndexError:
-            multi = 6
-            fm.con.print("[magenta]No number of workers specified. Using default of 6.")
-
+            multi = 4
+    
+        fm.con.print(f"[magenta]Using {multi} workers.")
+    else:
+        multi = None
+    
     # Initialize necessary modules
     fm.init(mode)
 
