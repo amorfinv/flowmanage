@@ -18,21 +18,23 @@ except ImportError:
 
 def create_grid():
     """
-    Code creates a grid of points of squares
+    Code creates a grid of points of squares.
     """
 
     fm.con.print('[magenta]Creating grid of from constrained airspace...')
 
-    # get the grid size
+    # get the grid size and path
     grid_size = fm.settings.grid_size
-    const_path = os.path.join(fm.settings.geo_data, 'airspace', 'constrained_airspace.gpkg')
-    const_airspace = QgsVectorLayer(const_path)
-
-    # Now create the grid
     grid_path = fm.settings.grid_path
 
+    # get the extent of the constrained airspace
+    const_path = os.path.join(fm.settings.geo_data, 'airspace', 'constrained_airspace.gpkg')
+    const_airspace = QgsVectorLayer(const_path)
+    extent = const_airspace.extent()
+
+    # intialize the inputs for the algorithm and run
     grid_inputs = {'CRS' : QgsCoordinateReferenceSystem('EPSG:32633'), 
-                    'EXTENT' : '596540.465300000,606393.683900000,5335138.924700000,5345123.448600000 [EPSG:32633]', 
+                    'EXTENT' : extent, 
                     'HOVERLAY' : 0, 
                     'HSPACING' : grid_size, 
                     'OUTPUT' : grid_path, 
@@ -41,7 +43,6 @@ def create_grid():
                     'VSPACING' : grid_size}
 
     processing.run("native:creategrid", grid_inputs)
-
 
 ##########################QGIS INITIALIZE####################################
 
