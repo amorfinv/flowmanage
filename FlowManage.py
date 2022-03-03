@@ -10,11 +10,14 @@ def main():
         fm.con.print("[blue underline]Usage[/][blue]: [green]python FlowManage.py --options")
         fm.con.print("\n[magenta]FlowManage will run all modules in order if no options are specified.")
         fm.con.print("[magenta]The order of modules is: (1)intention, (2)airspace, (3)scenario.")
+        fm.con.print("[magenta] Some modules are not ran unless specified.")
         fm.con.print("\n[red underline]Options:")
         fm.con.print("[red]--help                Display this information.")
+        fm.con.print("[red]--odpoints            Create the origin/destination pairs.")
         fm.con.print("[red]--intention           Create the intention csv files.")
         fm.con.print("[red]--airspace            Create the airspace json files.")
         fm.con.print("[red]--scenario            Create the scenario scn files.")
+        fm.con.print("[red]--qgis                Run qgis algorthims.")
         fm.con.print("[red]--multi num_workers   Multiprocessing option with workers.")
         quit()  
     
@@ -24,6 +27,10 @@ def main():
         mode = 'intention'
     elif '--scenario' in sys.argv:
         mode = 'scenario'
+    elif '--odpoints' in sys.argv:
+        mode = 'odpoints'
+    elif '--qgis' in sys.argv:
+        mode = 'qgis'
     else:
         mode = 'all'
 
@@ -50,6 +57,13 @@ def main():
     elif mode == 'scenario':
         fm.scen.process(multi)
 
+    elif mode == 'odpoints':
+        fm.odpoints.process()
+
+    elif mode == 'qgis':
+        # Nothing happens here if qgis is selected
+        pass
+    
     else:
         fm.inten.process()
         fm.air.process()

@@ -5,3 +5,6 @@
 # stop tracking vienna data
 *.gpkg
 *.graphml
+*.gpkg-shm
+*.gpkg-wal
+flowmanage.egg-info/*

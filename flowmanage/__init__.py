@@ -5,6 +5,7 @@ from rich.console import Console
 air = None
 inten = None
 scen = None
+pyqgis = None
 
 # printing objects
 con = Console()
@@ -14,7 +15,7 @@ def init(mode='all') -> None:
 
     # Initialize global settings
     settings.init()
-    global air, inten, scen
+    global air, inten, scen, odpoints, pyqgis
 
     if mode == 'airspace':
         from flowmanage.airspacedesign import AirspaceDesign
@@ -29,6 +30,17 @@ def init(mode='all') -> None:
 
         from flowmanage.scenariomaker import ScenarioMaker         
         scen = ScenarioMaker()
+
+    elif mode == 'odpoints':
+        """This is only used if specified in the command line"""
+
+        from flowmanage.odpoints import StreetCenterPoints
+        odpoints = StreetCenterPoints()
+    
+    elif mode == 'qgis':
+        """This is only used if specified in the command line"""
+        # this runs the algorithms in qgis
+        import flowmanage.pyqgis
 
     else:
         from flowmanage.airspacedesign import AirspaceDesign 
