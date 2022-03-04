@@ -59,6 +59,9 @@ class QgisAlgos:
         num_rows = int((grid_extent.height()) / grid_size)
         num_cols = int((grid_extent.width()) / grid_size)
 
+        # TODO: may not work with a non square grid
+        # TODO: combine all the for loops into one
+        
         selected_fid = []
         # Get the first feature id from the layer
         for feature in grid.getFeatures():
@@ -83,7 +86,9 @@ class QgisAlgos:
                 row_count = 1
                 col_count += 1
         
+        # start editing qgis layer
         grid.startEditing()
+
         # add attribute to qgis layer
         grid.dataProvider().addAttributes([QgsField('row', QVariant.Int), QgsField('col', QVariant.Int)])
         grid.updateFields()
