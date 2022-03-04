@@ -18,16 +18,16 @@ def start():
     qgs = QgsApplication([], True)
     qgs.initQgis()
 
-    # initialize processing algorithms and then import them as global variables
+    # initialize processing algorithms and then import
     Processing.initialize()
     from qgis import processing 
 
+    # intialize the QgisAlgos class
     qgis_algos = QgisAlgos(processing)
     
     # run the algorithms specified in the settings
     for func in qgis_algos.qgis_funcs:
         if func.__name__ in fm.settings.qgis_algos:
-            # run the function
             func()
             
     # exit qgis
