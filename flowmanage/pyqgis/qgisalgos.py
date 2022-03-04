@@ -59,7 +59,6 @@ class QgisAlgos:
         num_rows = int((grid_extent.height()) / grid_size)
         num_cols = int((grid_extent.width()) / grid_size)
 
-        # TODO: may not work with a non square grid
         # TODO: combine all the for loops into one
         
         selected_fid = []

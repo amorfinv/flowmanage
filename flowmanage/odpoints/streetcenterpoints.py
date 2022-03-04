@@ -67,8 +67,45 @@ class StreetCenterPoints:
 
     def filter_center_points(self, center_points: gpd.GeoDataFrame, grid: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
         '''
-        Filter the center points to the grid. Only keep one point per grid cell.
-        This point should be furthest from the edges of the grid cell.
+        Filter the center points to the grid created with create_grid. 
+        Only keep one point per grid cell. It also ensures that all points are at least
+        fm.settings.grid_size distance away from each other. This means that neighboring
+        cells will not have a node.
+
+        If there are many points in one cell then algorithm will keep the one
+        that is furthest from the edge of the cell.
+
+        Below is an example of how the nodes may be spread inside the grid:
+
+        Note that there will only be points on odd rows (1,3,5,7,9...).
+        For odd columns it is (1,5,9..)
+        For even columns it is (3,7..)
+
+        This will ensure that the nodes are always at least fm.settings.grid_size 
+        distance from each other.
+
+           1 2 3 4 5 6 7 8 9 10
+          ---------------------
+        1 |*| |*| |*| |*| |*| |
+          ---------------------
+        2 | | | | | | | | | | |
+          ---------------------
+        3 | |*| |*| |*| |*| |*|
+          ---------------------
+        4 | | | | | | | | | | |
+          ---------------------
+        5 |*| |*| |*| |*| |*| |
+          ---------------------
+        6 | | | | | | | | | | |
+          ---------------------
+        7 | |*| |*| |*| |*| |*|
+          ---------------------
+        8 | | | | | | | | | | |
+          ---------------------
+        9 |*| |*| |*| |*| |*| |
+          ---------------------
+       10 | | | | | | | | | | |
+          ---------------------
 
         Parameters
         ----------
@@ -82,12 +119,31 @@ class StreetCenterPoints:
         gpd.GeoDataFrame
             Filtered center points as gdf.
         '''
+        # get the entries for odd and even colums
+        n_rows = grid.row.max()
+        even_cols = list(range(3,n_rows + 1, 4))
+        odd_cols = list(range(1,n_rows + 1, 4))
+
         # filter through the grid cells and get points contained in them
         selected_points = []
         for i in track(range(len(grid)), description='Filtering center points...'):
             # get the grid cell
             cell = grid.geometry.iloc[i]
-   
+
+            # current row
+            row_val = grid.row.iloc[i]
+            col_val = grid.col.iloc[i]
+            
+            # TODO: A bit slow to check (row_val not in odd_cols)
+            # if column is odd and the row is not in odd columns
+            if (col_val % 2) and row_val not in odd_cols:
+                continue
+            
+            # TODO: A bit slow to check (row_val not in even_cols)
+            # if the column is even and the row is not in even columns
+            if (not col_val % 2) and row_val not in even_cols:
+                continue
+            
             # get the center points within the bounding box
             center_points_in_cell = center_points.sindex.query(cell, predicate='contains')
 

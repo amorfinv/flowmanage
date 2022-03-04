@@ -16,7 +16,7 @@ def start():
     from processing.core.Processing import Processing
 
     # Initialize QGIS application with no GUI
-    qgs = QgsApplication([], True)
+    qgs = QgsApplication([], False)
     qgs.initQgis()
 
     # initialize processing algorithms and then import
