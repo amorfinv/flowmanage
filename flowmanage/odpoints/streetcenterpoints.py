@@ -9,7 +9,7 @@ import pandas as pd
 import geopandas as gpd
 
 import flowmanage as fm
-
+ 
 class StreetCenterPoints:
     def __init__(self) -> None:
 
@@ -33,6 +33,9 @@ class StreetCenterPoints:
         # filter the points to the grid
         selected_center_points_gdf = self.filter_center_points(center_points, grid)
 
+        # split gdf randomly into origin or destination
+        selected_center_points_gdf['origin'] = np.random.choice([True, False], size=len(selected_center_points_gdf))
+        fm.con.print(selected_center_points_gdf)
         # save to a file
         selected_center_points_gdf.to_file(fm.settings.center_points, driver='GPKG')
 
