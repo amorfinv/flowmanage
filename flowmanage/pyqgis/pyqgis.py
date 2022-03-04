@@ -2,13 +2,13 @@ import flowmanage as fm
 try:
     from qgis.core import QgsApplication
 except ImportError:
-    fm.con.print('[bold red]QGIS not found!!')
+    fm.con.print('[rgb(88,150,50)]  [bold red]not found!!')
     fm.con.print('[bold red]Activate [bold magenta] [light_sea_green on grey27] qgis 🅒 ')
     exit()
 from flowmanage.pyqgis.qgisalgos import QgisAlgos
 
 def start():
-    fm.con.print('[magenta]Starting [chartreuse2] ...')
+    fm.con.print('[magenta]Starting [rgb(88,150,50)] ...')
     # Supply path to qgis install location
     QgsApplication.setPrefixPath(fm.settings.qgis_path, True)
 
@@ -33,4 +33,4 @@ def start():
             
     # exit qgis
     qgs.exitQgis()
-    fm.con.print('[magenta]Exiting [chartreuse2] ...')
+    fm.con.print('[magenta]Exiting [rgb(88,150,50)] ...')
