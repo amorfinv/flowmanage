@@ -1,1 +1,1 @@
-from .pyqgis import *
+from .pyqgis import start

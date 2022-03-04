@@ -62,7 +62,8 @@ def main():
 
     elif mode == 'qgis':
         # Nothing happens here if qgis is selected
-        pass
+        from flowmanage.pyqgis import start
+        start()
     
     else:
         fm.inten.process()

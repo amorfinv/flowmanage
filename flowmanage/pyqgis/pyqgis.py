@@ -1,18 +1,40 @@
-import os
-
-import flowmanage as fm
-
-# Import QGIS
 try:
     from qgis.core import QgsApplication, QgsVectorLayer, QgsCoordinateReferenceSystem
-    # Supply path to qgis install location
-    QgsApplication.setPrefixPath(fm.settings.qgis_path, True)
-    from processing.core.Processing import Processing
-
 except ImportError:
     fm.con.print('[bold red]QGIS not found!!')
     fm.con.print('[bold red]Activate [bold magenta] [light_sea_green on grey27] qgis 🅒 ')
     exit()
+
+import os
+
+import flowmanage as fm
+
+# global variable
+processing = None
+
+# Initialize qgis
+def start():
+    # Supply path to qgis install location
+    QgsApplication.setPrefixPath(fm.settings.qgis_path, True)
+    
+    # import processing to make qgis algirithms available
+    from processing.core.Processing import Processing
+
+    # Initialize QGIS application with no GUI
+    qgs = QgsApplication([], True)
+    qgs.initQgis()
+
+    # initialize processing algorithms and then import them as global variables
+    Processing.initialize()
+    global processing
+    from qgis import processing 
+
+    # run the algorithms specified in the settings
+    if 'create_grid' in fm.settings.qgis_algos:
+        create_grid()
+            
+    # exit qgis
+    qgs.exitQgis()
 
 ##########################QGIS ALGORITHMS####################################
 
@@ -43,21 +65,3 @@ def create_grid():
                     'VSPACING' : grid_size}
 
     processing.run("native:creategrid", grid_inputs)
-
-##########################QGIS INITIALIZE####################################
-
-# Initialize QGIS application with no GUI
-qgs = QgsApplication([], True)
-qgs.initQgis()
-
-# initialize processing algorithms and then import
-Processing.initialize()
-from qgis import processing 
-
-
-# run the algorithms
-if 'create_grid' in fm.settings.qgis_algos:
-    create_grid()
-        
-# exit qgis
-qgs.exitQgis()
