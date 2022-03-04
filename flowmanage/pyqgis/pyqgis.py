@@ -8,6 +8,7 @@ except ImportError:
 from flowmanage.pyqgis.qgisalgos import QgisAlgos
 
 def start():
+    fm.con.print('[magenta]Starting [chartreuse2] ...')
     # Supply path to qgis install location
     QgsApplication.setPrefixPath(fm.settings.qgis_path, True)
 
@@ -32,3 +33,4 @@ def start():
             
     # exit qgis
     qgs.exitQgis()
+    fm.con.print('[magenta]Exiting [chartreuse2] ...')
