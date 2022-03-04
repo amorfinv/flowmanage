@@ -35,9 +35,10 @@ class StreetCenterPoints:
 
         # split gdf randomly into origin or destination
         selected_center_points_gdf['origin'] = np.random.choice([True, False], size=len(selected_center_points_gdf))
-        fm.con.print(selected_center_points_gdf)
+
         # save to a file
         selected_center_points_gdf.to_file(fm.settings.center_points, driver='GPKG')
+        fm.con.print('[magenta]Saving filtered center points...')
 
     def get_center_points(self, edge_cutoff: float) -> gpd.GeoDataFrame:
         '''
@@ -126,7 +127,7 @@ class StreetCenterPoints:
 
         # filter through the grid cells and get points contained in them
         selected_points = []
-        for i in track(range(len(grid)), description='Filtering center points...'):
+        for i in track(range(len(grid)), description='[magenta]Filtering center points...'):
             # get the grid cell
             cell = grid.geometry.iloc[i]
 
