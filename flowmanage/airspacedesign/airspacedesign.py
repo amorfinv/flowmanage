@@ -25,8 +25,6 @@ class AirspaceDesign:
         self.info_layers = fm.settings.info_layers
         self.extreme_layer = fm.settings.extreme_layer
         self.ground_level_layer = fm.settings.ground_level_layer
-        
-
 
     def process(self) -> None:
 
