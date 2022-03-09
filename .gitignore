@@ -1,6 +1,7 @@
 */__pycache__/
 *.cpython*
 *.DS_Store
+.vscode/
 
 # stop tracking vienna data
 *.gpkg
