@@ -21,14 +21,16 @@ class AirspaceDesign:
         self.info_layers = fm.settings.info_layers
         self.extreme_layer = fm.settings.extreme_layer
         self.ground_level_layer = fm.settings.ground_level_layer
-        
         self.heading_airspace = fm.settings.heading_airspace
         
+        self.airspace_filepath = fm.settings.airspace_filepath
+        
+        # Initialize the airspace config dictionary
         self.airspace_config = {}
         self.airspace_info = {}
         
     def process(self) -> None:
-
+        
         # step 1.a: initialize the airspace info
         layer_heights = list(range(self.min_height, self.max_height + self.layer_spacing, self.layer_spacing))
         self.airspace_info = {'levels': layer_heights, 'spacing': self.layer_spacing}
@@ -64,10 +66,10 @@ class AirspaceDesign:
         airspace = {'config': self.airspace_config, 'info': self.airspace_info}
 
         # save layers to json
-        filepath = fm.settings.airspace_filepath
-        with open(filepath, 'w') as fp:
+        with open(self.airspace_filepath, 'w') as fp:
             json.dump(airspace, fp, indent=4)
-
+            
+        fm.con.print(f'[magenta]Saving airspace json to [bold green]{filepath}[/] ...')
 
     def build_layer_airspace_dict(self, layer_heights, stack_layers, opt):
         """ This creates an airsapce layer dictionary based on the minimum height, 
