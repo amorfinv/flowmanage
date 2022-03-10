@@ -69,7 +69,7 @@ class AirspaceDesign:
         with open(self.airspace_filepath, 'w') as fp:
             json.dump(airspace, fp, indent=4)
             
-        fm.con.print(f'[magenta]Saving airspace json to [bold green]{filepath}[/] ...')
+        fm.con.print(f'[magenta]Saving airspace json to [bold green]{self.airspace_filepath}[/] ...')
 
     def build_layer_airspace_dict(self, layer_heights, stack_layers, opt):
         """ This creates an airsapce layer dictionary based on the minimum height, 
